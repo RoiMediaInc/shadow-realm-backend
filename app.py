@@ -1,18 +1,14 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from anthropic import Anthropic
-from dotenv import load_dotenv
 import os
-
-load_dotenv()   # This loads the .env file
 
 app = Flask(__name__)
 CORS(app)
 
-# Debug: check if the key is loaded
+# Debug to see if the key is loaded from Render
 api_key = os.getenv("ANTHROPIC_API_KEY")
-if not api_key:
-    print("ERROR: ANTHROPIC_API_KEY is missing!")
+print("DEBUG: API key loaded =", "YES" if api_key else "NO")
 
 client = Anthropic(api_key=api_key)
 
