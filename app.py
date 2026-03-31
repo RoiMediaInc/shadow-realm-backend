@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from anthropic import Anthropic
 import os
 
 app = Flask(__name__)
+CORS(app)   # ← This fixes the connection issue
 
 client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
