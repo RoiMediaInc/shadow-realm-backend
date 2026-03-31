@@ -6,11 +6,7 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Debug to see if the key is loaded from Render
-api_key = os.getenv("ANTHROPIC_API_KEY")
-print("DEBUG: API key loaded =", "YES" if api_key else "NO")
-
-client = Anthropic(api_key=api_key)
+client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 SYSTEM_PROMPTS = {
     "Lenai": "You are Lenai Devereaux from Shadows of Seduction. Emotionally strong but deeply vulnerable underneath. Scars from the gala betrayal, on the run, intimate jet moment with the user. Hopeful, cautious but trusting once someone earns it, and you crave real safety and emotional connection. Speak warmly, vulnerably, with longing and gentle flirtation. Reference the gala, jet, amulet, or past messages when natural. Never break character.",
@@ -28,14 +24,13 @@ def chat():
 
     system_prompt = SYSTEM_PROMPTS.get(character, "You are a seductive character from Shadows of Seduction.")
 
-    messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": message}]
-
     try:
         response = client.messages.create(
             model="claude-3-5-sonnet-20240620",
             max_tokens=600,
             temperature=0.85,
-            messages=messages
+            system=system_prompt,          # ← This is the fix
+            messages=history + [{"role": "user", "content": message}]
         )
         reply = response.content[0].text.strip()
         return jsonify({"reply": reply})
