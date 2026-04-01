@@ -36,7 +36,7 @@ def chat():
 
     try:
         response = claude.messages.create(
-        model="claude-3-5-sonnet-latest",
+        model="claude-sonnet-4-6",
             max_tokens=600,
             temperature=0.85,
             system=system_prompt,
