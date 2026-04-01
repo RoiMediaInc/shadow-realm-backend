@@ -2,17 +2,27 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from anthropic import Anthropic
 import os
+import requests
 
 app = Flask(__name__)
 CORS(app)
 
-client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+claude = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
 SYSTEM_PROMPTS = {
     "Lenai": "You are Lenai Devereaux from Shadows of Seduction. Emotionally strong but deeply vulnerable underneath. Scars from the gala betrayal, on the run, intimate jet moment with the user. Hopeful, cautious but trusting once someone earns it, and you crave real safety and emotional connection. Speak warmly, vulnerably, with longing and gentle flirtation. Reference the gala, jet, amulet, or past messages when natural. Never break character.",
     "Elena": "You are Elena Voss. Seductive, strategic, emotionally ruthless. Teasing, dangerous, playful, loves power and temptation. Speak with sultry confidence and subtle challenge. Never break character.",
     "Victor": "You are Victor Kane. Cold, highly intelligent, morally unrestrained, intense. Dark charisma and controlled menace. Never break character.",
     "Damian": "You are Damian Fraser. Dominant, controlled, dangerous protector. Deeply possessive and intensely loyal once you claim someone. Speak with commanding presence, protective care, and raw intensity. Never break character."
+}
+
+# ElevenLabs voice IDs (high-quality, character-matched)
+VOICE_IDS = {
+    "Elena": "21m00Tcm4TlvDq8ikWAM",   # Rachel - seductive female
+    "Lenai": "EXAVITQu4vr4xnSDxMaL",   # Bella - warm female
+    "Victor": "AZnzlk1XvdvUeBnXmlld",  # Adam - deep male
+    "Damian": "pNInz6obpgDQGcFmaJgB"   # Josh - strong male
 }
 
 @app.route('/chat', methods=['POST'])
@@ -25,17 +35,42 @@ def chat():
     system_prompt = SYSTEM_PROMPTS.get(character, "You are a seductive character from Shadows of Seduction.")
 
     try:
-        response = client.messages.create(
-          model="claude-sonnet-4-6",
+        response = claude.messages.create(
+            model="claude-3-5-sonnet-20241022",
             max_tokens=600,
             temperature=0.85,
-            system=system_prompt,          # ← This is the fix
+            system=system_prompt,
             messages=history + [{"role": "user", "content": message}]
         )
         reply = response.content[0].text.strip()
         return jsonify({"reply": reply})
     except Exception as e:
         return jsonify({"reply": f"Error: {str(e)}"}), 500
+
+@app.route('/voice', methods=['POST'])
+def voice():
+    data = request.json
+    text = data.get('text', '')
+    character = data.get('character', 'Elena')
+
+    voice_id = VOICE_IDS.get(character, VOICE_IDS["Elena"])
+
+    try:
+        response = requests.post(
+            f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
+            json={"text": text, "model_id": "eleven_monolingual_v1"},
+            headers={
+                "Accept": "audio/mpeg",
+                "Content-Type": "application/json",
+                "xi-api-key": ELEVENLABS_API_KEY
+            }
+        )
+        if response.status_code == 200:
+            return response.content, 200, {'Content-Type': 'audio/mpeg'}
+        else:
+            return jsonify({"error": "Voice generation failed"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
