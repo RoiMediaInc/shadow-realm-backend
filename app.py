@@ -6,14 +6,14 @@ def voice():
     character = data.get('character', 'Damian')
     text = data.get('text', '')
 
-    # ULTRA aggressive cleaning — removes EVERY *action*, _action_, leftover * or _
-    voice_text = re.sub(r'\*[\s\S]*?\*', '', text)      # removes anything between * and *
-    voice_text = re.sub(r'[_*]+', '', voice_text)       # removes any leftover * or _
-    voice_text = re.sub(r'\s+', ' ', voice_text).strip() # cleans extra spaces
+    # MAXIMUM aggressive cleaning — kills every asterisk pattern
+    voice_text = re.sub(r'\*[\s\S]*?\*', '', text)      # removes *anything between stars*
+    voice_text = re.sub(r'[_*]+', '', voice_text)       # removes all leftover * and _
+    voice_text = re.sub(r'\s+', ' ', voice_text).strip()
 
-    # Shorten very long responses to reduce latency
-    if len(voice_text) > 220:
-        voice_text = voice_text[:220] + "..."
+    # Shorten even more for better latency
+    if len(voice_text) > 180:
+        voice_text = voice_text[:180] + "..."
 
     voice_id = VOICE_IDS.get(character, VOICE_IDS["Damian"])
 
@@ -24,8 +24,8 @@ def voice():
                 "model_id": "eleven_monolingual_v1",
                 "text": voice_text,
                 "voice_settings": {
-                    "stability": 0.85,
-                    "similarity_boost": 0.75
+                    "stability": 0.90,      # higher = faster & more consistent
+                    "similarity_boost": 0.70
                 }
             },
             headers={
