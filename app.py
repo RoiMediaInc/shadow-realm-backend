@@ -47,14 +47,19 @@ def voice():
     character = data.get('character', 'Damian')
     text = data.get('text', '')
 
-    # DEBUG: Show what Claude sent
-    print(f"ORIGINAL FROM CLAUDE: {repr(text)}")
+    # DEBUG: Show exactly what Claude sent
+    print(f"ORIGINAL TEXT FROM CLAUDE: {repr(text)}")
 
-    # Nuclear cleaning
+    # Nuclear cleaning (ElevenLabs recommended approach)
     voice_text = re.sub(r'\*[^*]*\*', '', text)
     voice_text = re.sub(r'[_*]+', '', voice_text)
     voice_text = re.sub(r'\s+', ' ', voice_text).strip()
     voice_text = voice_text.replace('asterisk', '').replace('Asterisk', '')
+
+    print(f"AFTER CLEANING 1: {repr(voice_text)}")
+
+    voice_text = voice_text.replace('*', '').replace('_', '')
+    voice_text = re.sub(r'\s+', ' ', voice_text).strip()
 
     print(f"FINAL CLEANED TEXT SENT TO ELEVENLABS: {repr(voice_text)}")
 
@@ -80,5 +85,4 @@ def voice():
         response.raise_for_status()
         return Response(response.content, mimetype="audio/mpeg")
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
         return jsonify({"error": str(e)}), 500
