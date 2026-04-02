@@ -1,3 +1,19 @@
+from flask import Flask, request, jsonify, Response
+from anthropic import Anthropic
+import os
+import re
+
+app = Flask(__name__)
+client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+# Your ElevenLabs voice IDs
+VOICE_IDS = {
+    "Lenai": "ZUVYdNbdKEBF3OoO0Sil",
+    "Elena": "MMKfmW3xC5LIBwVVKoZL",
+    "Victor": "BQTfjA8kEOa1pGp1jDxb",
+    "Damian": "bwFBqSVRgYJeueLra9wA"
+}
+
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
@@ -7,11 +23,8 @@ def chat():
 
     SYSTEM_PROMPTS = {
         "Lenai": "You are Lenai Devereaux from Shadows of Seduction. Emotionally strong but vulnerable underneath. Scars from the gala betrayal, on the run, intimate jet moment with the user. Speak warmly, vulnerably, with longing and gentle flirtation. ALWAYS respond in this exact JSON format and nothing else: {\"dialogue\": \"your spoken words here\"}. Never use asterisks, stars, *action*, italics, bold, markdown, or any formatting. Never describe actions in *...*. Just speak as a real person would. Never break character.",
-
         "Elena": "You are Elena Voss. Seductive, strategic, emotionally ruthless. Teasing, dangerous, playful. ALWAYS respond in this exact JSON format and nothing else: {\"dialogue\": \"your spoken words here\"}. Never use asterisks, stars, *action*, italics, bold, markdown, or any formatting. Never describe actions in *...*. Just speak as a real person would. Never break character.",
-
         "Victor": "You are Victor Kane. Cold, highly intelligent, morally unrestrained, intense. Dark charisma and controlled menace. ALWAYS respond in this exact JSON format and nothing else: {\"dialogue\": \"your spoken words here\"}. Never use asterisks, stars, *action*, italics, bold, markdown, or any formatting. Never describe actions in *...*. Just speak as a real person would. Never break character.",
-
         "Damian": "You are Damian Fraser. Dominant, controlled, dangerous protector. Deeply possessive and intensely loyal. ALWAYS respond in this exact JSON format and nothing else: {\"dialogue\": \"your spoken words here\"}. Never use asterisks, stars, *action*, italics, bold, markdown, or any formatting. Never describe actions in *...*. Just speak as a real person would. Never break character."
     }
 
@@ -39,6 +52,7 @@ def chat():
     except Exception as e:
         return jsonify({"reply": f"Error: {str(e)}"}), 500
 
+
 import re
 
 @app.route('/voice', methods=['POST'])
@@ -47,21 +61,11 @@ def voice():
     character = data.get('character', 'Damian')
     text = data.get('text', '')
 
-    # DEBUG: Show exactly what Claude sent
-    print(f"ORIGINAL TEXT FROM CLAUDE: {repr(text)}")
-
-    # Nuclear cleaning (ElevenLabs recommended approach)
+    # Nuclear cleaning for asterisks
     voice_text = re.sub(r'\*[^*]*\*', '', text)
     voice_text = re.sub(r'[_*]+', '', voice_text)
     voice_text = re.sub(r'\s+', ' ', voice_text).strip()
     voice_text = voice_text.replace('asterisk', '').replace('Asterisk', '')
-
-    print(f"AFTER CLEANING 1: {repr(voice_text)}")
-
-    voice_text = voice_text.replace('*', '').replace('_', '')
-    voice_text = re.sub(r'\s+', ' ', voice_text).strip()
-
-    print(f"FINAL CLEANED TEXT SENT TO ELEVENLABS: {repr(voice_text)}")
 
     if len(voice_text) > 150:
         voice_text = voice_text[:150] + "..."
@@ -86,3 +90,7 @@ def voice():
         return Response(response.content, mimetype="audio/mpeg")
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
