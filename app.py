@@ -5,7 +5,6 @@ def chat():
     message = data.get('message', '')
     history = data.get('history', [])
 
-    # Strongest no-asterisk instructions + forced JSON output
     SYSTEM_PROMPTS = {
         "Lenai": "You are Lenai Devereaux from Shadows of Seduction. Emotionally strong but vulnerable underneath. Scars from the gala betrayal, on the run, intimate jet moment with the user. Speak warmly, vulnerably, with longing and gentle flirtation. ALWAYS respond in this exact JSON format and nothing else: {\"dialogue\": \"your spoken words here\"}. Never use asterisks, stars, *action*, italics, bold, markdown, or any formatting. Never describe actions in *...*. Just speak as a real person would. Never break character.",
 
@@ -48,11 +47,16 @@ def voice():
     character = data.get('character', 'Damian')
     text = data.get('text', '')
 
-    # Nuclear cleaning for asterisks
+    # DEBUG: Show what Claude sent
+    print(f"ORIGINAL FROM CLAUDE: {repr(text)}")
+
+    # Nuclear cleaning
     voice_text = re.sub(r'\*[^*]*\*', '', text)
     voice_text = re.sub(r'[_*]+', '', voice_text)
     voice_text = re.sub(r'\s+', ' ', voice_text).strip()
     voice_text = voice_text.replace('asterisk', '').replace('Asterisk', '')
+
+    print(f"FINAL CLEANED TEXT SENT TO ELEVENLABS: {repr(voice_text)}")
 
     if len(voice_text) > 150:
         voice_text = voice_text[:150] + "..."
@@ -65,10 +69,7 @@ def voice():
             json={
                 "model_id": "eleven_flash_v2_5",
                 "text": voice_text,
-                "voice_settings": {
-                    "stability": 0.5,
-                    "similarity_boost": 0.75
-                },
+                "voice_settings": {"stability": 0.5, "similarity_boost": 0.75},
                 "optimize_streaming_latency": 4
             },
             headers={
@@ -79,4 +80,5 @@ def voice():
         response.raise_for_status()
         return Response(response.content, mimetype="audio/mpeg")
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
         return jsonify({"error": str(e)}), 500
