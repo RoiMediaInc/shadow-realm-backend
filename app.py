@@ -1,9 +1,11 @@
-from flask import Flask, request, jsonify, Response
-from flask_cors import CORS
-from anthropic import Anthropic
+
 import os
 import re
-
+import json
+from flask import Flask, request, jsonify, Response
+from flask_cors import CORS
+import requests  # ← ADD THIS LINE
+from anthropic import Anthropic
 app = Flask(__name__)
 CORS(app)
 
