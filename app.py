@@ -26,7 +26,7 @@ def chat():
             model="claude-sonnet-4-6",
             max_tokens=300,
             temperature=0.85,
-            system=system_prompt,          # ← This is the required fix
+            system=system_prompt,          # ← This is the required top-level parameter
             messages=messages
         )
         raw_reply = response.content[0].text.strip()
