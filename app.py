@@ -13,6 +13,11 @@ VOICE_IDS = {
     "Damian": "bwFBqSVRgYJeueLra9wA"
 }
 
+# Health check - so you can see the backend is alive
+@app.route('/')
+def home():
+    return "Backend is running - ready for /chat and /voice"
+
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
@@ -58,7 +63,6 @@ def voice():
     character = data.get('character', 'Damian')
     text = data.get('text', '')
 
-    # Nuclear cleaning
     voice_text = re.sub(r'\*[^*]*\*', '', text)
     voice_text = re.sub(r'[_*]+', '', voice_text)
     voice_text = re.sub(r'\s+', ' ', voice_text).strip()
