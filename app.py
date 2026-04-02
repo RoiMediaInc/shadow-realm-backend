@@ -43,7 +43,6 @@ def chat():
     except Exception as e:
         return jsonify({"reply": f"Error: {str(e)}"}), 500
 
-
 @app.route('/voice', methods=['POST'])
 def voice():
     data = request.json
