@@ -6,17 +6,14 @@ def voice():
     character = data.get('character', 'Damian')
     text = data.get('text', '')
 
-    # NUCLEAR cleaning — kills every asterisk pattern Claude uses
-    voice_text = re.sub(r'\*[\s\S]*?\*', '', text)        # removes *anything between stars*
-    voice_text = re.sub(r'[_*]+', '', voice_text)         # removes leftover * and _
-    voice_text = re.sub(r'\s+', ' ', voice_text).strip()  # cleans extra spaces
+    # ULTRA aggressive cleaning — removes every *action*, _action_, leftover * or _
+    voice_text = re.sub(r'\*[\s\S]*?\*', '', text)   # removes anything between * and *
+    voice_text = re.sub(r'[_*]+', '', voice_text)    # removes any * or _ left behind
+    voice_text = re.sub(r'\s+', ' ', voice_text).strip()
 
-    # Extra safety pass
-    voice_text = voice_text.replace('asterisk', '').replace('Asterisk', '')
-
-    # Shorten aggressively for better latency
-    if len(voice_text) > 160:
-        voice_text = voice_text[:160] + "..."
+    # Shorten long responses to reduce latency even more
+    if len(voice_text) > 220:
+        voice_text = voice_text[:220] + "..."
 
     voice_id = VOICE_IDS.get(character, VOICE_IDS["Damian"])
 
@@ -27,8 +24,8 @@ def voice():
                 "model_id": "eleven_monolingual_v1",
                 "text": voice_text,
                 "voice_settings": {
-                    "stability": 0.92,      # even higher = faster generation
-                    "similarity_boost": 0.65
+                    "stability": 0.85,
+                    "similarity_boost": 0.75
                 }
             },
             headers={
