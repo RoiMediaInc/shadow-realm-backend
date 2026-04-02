@@ -53,20 +53,25 @@ def chat():
     except Exception as e:
         import re
 
+import re
+
 @app.route('/voice', methods=['POST'])
 def voice():
     data = request.json
     character = data.get('character', 'Damian')
     text = data.get('text', '')
 
-    # Nuclear cleaning for asterisks
-    voice_text = re.sub(r'\*[\s\S]*?\*', '', text)
-    voice_text = re.sub(r'[_*]+', '', voice_text)
+    # Strong cleaning from ElevenLabs recommendation
+    voice_text = re.sub(r'\*[^*]+\*', '', text)   # removes *action*
+    voice_text = re.sub(r'[_*]+', '', voice_text) # removes leftover * and _
     voice_text = re.sub(r'\s+', ' ', voice_text).strip()
+
+    # Extra safety
     voice_text = voice_text.replace('asterisk', '').replace('Asterisk', '')
 
-    if len(voice_text) > 150:
-        voice_text = voice_text[:150] + "..."
+    # Shorten for lower latency
+    if len(voice_text) > 160:
+        voice_text = voice_text[:160] + "..."
 
     voice_id = VOICE_IDS.get(character, VOICE_IDS["Damian"])
 
@@ -74,10 +79,13 @@ def voice():
         response = requests.post(
             f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
             json={
-                "model_id": "eleven_monolingual_v1",
+                "model_id": "eleven_flash_v2_5",          # ← Fast model they recommended
                 "text": voice_text,
-                "voice_settings": {"stability": 0.92, "similarity_boost": 0.65},
-                "optimize_streaming_latency": 0
+                "voice_settings": {
+                    "stability": 0.5,
+                    "similarity_boost": 0.75
+                },
+                "optimize_streaming_latency": 4           # ← Maximum latency reduction
             },
             headers={
                 "Accept": "audio/mpeg",
@@ -85,7 +93,10 @@ def voice():
             }
         )
         response.raise_for_status()
-        return Response(response.content, mimetype="audio/mpeg")
+
+        return Response(
+            response.content,
+            mimetype="audio/mpeg"
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-        return jsonify({"reply": f"Error: {str(e)}"}), 500
