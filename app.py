@@ -6,7 +6,6 @@ import re
 app = Flask(__name__)
 client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-# Your ElevenLabs voice IDs
 VOICE_IDS = {
     "Lenai": "ZUVYdNbdKEBF3OoO0Sil",
     "Elena": "MMKfmW3xC5LIBwVVKoZL",
@@ -53,15 +52,13 @@ def chat():
         return jsonify({"reply": f"Error: {str(e)}"}), 500
 
 
-import re
-
 @app.route('/voice', methods=['POST'])
 def voice():
     data = request.json
     character = data.get('character', 'Damian')
     text = data.get('text', '')
 
-    # Nuclear cleaning for asterisks
+    # Nuclear cleaning
     voice_text = re.sub(r'\*[^*]*\*', '', text)
     voice_text = re.sub(r'[_*]+', '', voice_text)
     voice_text = re.sub(r'\s+', ' ', voice_text).strip()
