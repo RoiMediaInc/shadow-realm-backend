@@ -1,6 +1,5 @@
 @app.route('/chat', methods=['POST'])
 def chat():
-    # Use form data (matches your frontend)
     character = request.form.get('character', 'Damian')
     message = request.form.get('message', '')
     history_str = request.form.get('history', '[]')
@@ -27,7 +26,7 @@ def chat():
             model="claude-sonnet-4-6",
             max_tokens=300,
             temperature=0.85,
-            system=system_prompt,          # ← Top-level system parameter (this fixes the error)
+            system=system_prompt,          # ← This is the required fix
             messages=messages
         )
         raw_reply = response.content[0].text.strip()
