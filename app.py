@@ -1,28 +1,6 @@
-from flask import Flask, request, jsonify, Response
-from flask_cors import CORS
-from anthropic import Anthropic
-import os
-import re
-
-app = Flask(__name__)
-CORS(app)  # This fixes connection issues
-
-client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-
-VOICE_IDS = {
-    "Lenai": "ZUVYdNbdKEBF3OoO0Sil",
-    "Elena": "MMKfmW3xC5LIBwVVKoZL",
-    "Victor": "BQTfjA8kEOa1pGp1jDxb",
-    "Damian": "bwFBqSVRgYJeueLra9wA"
-}
-
-@app.route('/')
-def home():
-    return "Backend is running - ready for /chat and /voice"
-
 @app.route('/chat', methods=['POST'])
 def chat():
-    # Use request.form because frontend sends form data
+    # Use form data (matches your frontend)
     character = request.form.get('character', 'Damian')
     message = request.form.get('message', '')
     history_str = request.form.get('history', '[]')
@@ -42,13 +20,14 @@ def chat():
 
     system_prompt = SYSTEM_PROMPTS.get(character, SYSTEM_PROMPTS["Damian"])
 
-    messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": message}]
+    messages = history + [{"role": "user", "content": message}]
 
     try:
         response = client.messages.create(
             model="claude-sonnet-4-6",
             max_tokens=300,
             temperature=0.85,
+            system=system_prompt,          # ← Top-level system parameter (this fixes the error)
             messages=messages
         )
         raw_reply = response.content[0].text.strip()
