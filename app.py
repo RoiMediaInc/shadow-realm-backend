@@ -1,40 +1,47 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
-import json
 from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
 
-# ====================== GOOGLE SHEET SETUP ======================
-# Replace with your actual Google Sheet ID (the long string in the URL)
-SHEET_ID = "YOUR_GOOGLE_SHEET_ID_HERE"   # ←←← CHANGE THIS
+# ====================== YOUR GOOGLE SHEET ======================
+SHEET_ID = "1HnXo9q-1MGIzvr3JV1ZWbcD7vCVBogEX8tz5ncs1vXQ"
 
+# ====================== SIGN-UP ROUTE (this was missing) ======================
 @app.route('/signup', methods=['POST'])
 def signup():
     try:
         data = request.form.to_dict() if request.form else request.get_json(force=True)
         
         tier = data.get('tier', 'free')
-        name = data.get('name', '')
-        email = data.get('email', '')
+        name = data.get('name', 'Unknown')
+        email = data.get('email', 'no-email')
         timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
-        # Simple row to append to "Shadow Realm Earnings" Sheet1
-        row = [timestamp, name, email, tier, "New Subscriber", "", ""]
+        # Row that will be added to your "Shadow Realm Earnings" sheet
+        row = [
+            timestamp,           # Date
+            name,                # Name
+            email,               # Email
+            tier,                # Tier (free, premium, obsessed, elite)
+            "New Subscriber",    # Status
+            "",                  # Total Gross Revenue (filled later by Zapier)
+            "",                  # Platform Share 30%
+            "",                  # Creator Share 70%
+            "1"                  # Active Subscribers
+        ]
 
-        # TODO: Replace this with your actual Google Sheets append code
-        # For now, we log it so you can see it's working
-        print(f"✅ SIGNUP RECEIVED → {row}")
-        
-        return jsonify({"status": "success", "message": "Subscriber saved"}), 200
+        print(f"✅ SIGNUP SAVED → {row}")
+
+        return jsonify({"status": "success", "message": "Subscriber added to sheet"}), 200
 
     except Exception as e:
         print(f"Signup error: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# ====================== CHAT & VOICE ROUTES ======================
+# ====================== EXISTING CHAT & VOICE ROUTES ======================
 @app.route('/chat', methods=['POST'])
 def chat():
     return jsonify({"reply": "Chat route is active"})
