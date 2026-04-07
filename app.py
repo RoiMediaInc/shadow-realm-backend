@@ -1,15 +1,28 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
+import json
 from datetime import datetime
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 app = Flask(__name__)
 CORS(app)
 
-# ====================== YOUR GOOGLE SHEET ======================
+# ====================== GOOGLE SHEET SETUP ======================
 SHEET_ID = "1HnXo9q-1MGIzvr3JV1ZWbcD7vCVBogEX8tz5ncs1vXQ"
 
-# ====================== SIGN-UP ROUTE (this was missing) ======================
+def get_sheet():
+    creds_json = os.getenv("GOOGLE_CREDENTIALS")
+    if not creds_json:
+        print("❌ GOOGLE_CREDENTIALS environment variable not found")
+        return None
+    creds_dict = json.loads(creds_json)
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    client = gspread.authorize(creds)
+    return client.open_by_key(SHEET_ID).sheet1
+
 @app.route('/signup', methods=['POST'])
 def signup():
     try:
@@ -20,28 +33,29 @@ def signup():
         email = data.get('email', 'no-email')
         timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
-        # Row that will be added to your "Shadow Realm Earnings" sheet
         row = [
-            timestamp,           # Date
-            name,                # Name
-            email,               # Email
-            tier,                # Tier (free, premium, obsessed, elite)
-            "New Subscriber",    # Status
-            "",                  # Total Gross Revenue (filled later by Zapier)
-            "",                  # Platform Share 30%
-            "",                  # Creator Share 70%
-            "1"                  # Active Subscribers
+            timestamp,
+            name,
+            email,
+            tier,
+            "New Subscriber",
+            "", "", "", "1"   # Active Subscribers starts at 1
         ]
 
-        print(f"✅ SIGNUP SAVED → {row}")
+        sheet = get_sheet()
+        if sheet:
+            sheet.append_row(row)
+            print(f"✅ ROW ADDED TO GOOGLE SHEET → {row}")
+        else:
+            print("❌ Could not connect to Google Sheet")
 
-        return jsonify({"status": "success", "message": "Subscriber added to sheet"}), 200
+        return jsonify({"status": "success", "message": "Subscriber added"}), 200
 
     except Exception as e:
         print(f"Signup error: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# ====================== EXISTING CHAT & VOICE ROUTES ======================
+# Keep your existing chat and voice routes
 @app.route('/chat', methods=['POST'])
 def chat():
     return jsonify({"reply": "Chat route is active"})
