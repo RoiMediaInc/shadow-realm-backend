@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime
+import os
 from supabase import create_client, Client
 
 app = Flask(__name__)
@@ -22,7 +23,7 @@ def signup():
         email = data.get('email', 'no-email')
         timestamp = datetime.utcnow().isoformat()
 
-        # Insert into Supabase table
+        # Insert into Supabase
         response = supabase.table("subscribers").insert({
             "name": name,
             "email": email,
@@ -40,7 +41,7 @@ def signup():
 
 @app.route('/', methods=['GET'])
 def home():
-    return "Shadow Realm Backend is running with Supabase ✅"
+    return "Backend is running with Supabase ✅"
 
 if __name__ == '__main__':
     import os
