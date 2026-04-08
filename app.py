@@ -87,7 +87,7 @@ def voice():
 
 @app.route('/', methods=['GET'])
 def home():
-    return "Backend is running with Supabase ✅"
+    return "TEST123 - Claude version is now live"
 
 if __name__ == '__main__':
     import os
