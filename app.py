@@ -21,7 +21,6 @@ def signup():
         tier = data.get('tier', 'free')
         name = data.get('name', 'Unknown')
         email = data.get('email', 'no-email')
-        timestamp = datetime.utcnow().isoformat()
 
         # Insert into Supabase
         response = supabase.table("subscribers").insert({
@@ -33,7 +32,7 @@ def signup():
 
         print(f"✅ SUBSCRIBER SAVED IN SUPABASE → {name} | {email} | Tier: {tier}")
 
-        return jsonify({"status": "success", "message": "Subscriber added"}), 200
+        return jsonify({"status": "success", "message": "Subscriber added to Supabase"}), 200
 
     except Exception as e:
         print(f"❌ Signup error: {e}")
