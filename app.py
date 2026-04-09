@@ -45,7 +45,7 @@ def chat():
             model="claude-3-5-sonnet-20241022",
             max_tokens=500,
             temperature=0.85,
-            system=system_prompt,          # ← Correct way
+            system=system_prompt,
             messages=messages
         )
 
@@ -59,6 +59,7 @@ def chat():
 
 @app.route('/voice', methods=['POST'])
 def voice():
+    print("🚀 /voice called!")
     data = request.form.to_dict() if request.form else request.get_json(force=True)
     character = data.get('character', 'Damian')
     text = data.get('text', '')
@@ -71,9 +72,10 @@ def voice():
             headers={"xi-api-key": os.getenv("ELEVENLABS_API_KEY"), "Accept": "audio/mpeg"}
         )
         resp.raise_for_status()
+        print(f"✅ Voice success - {len(resp.content)} bytes")
         return Response(resp.content, mimetype="audio/mpeg")
     except Exception as e:
-        print(f"❌ Voice error: {str(e)}")
+        print(f"❌ VOICE ERROR: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/')
