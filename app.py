@@ -30,15 +30,15 @@ def chat():
     except:
         history = []
     
-    system_prompt = f"You are {character} from Shadows of Seduction. Respond naturally and conversationally as the character."
-    messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": message}]
-    
+    system_prompt = f"You are {character} from Shadows of Seduction. Respond naturally and conversationally as the character. Never use asterisks or action descriptions."
+
     try:
         response = client.messages.create(
             model="claude-3-5-sonnet-20241022",
             max_tokens=400,
             temperature=0.85,
-            messages=messages
+            system=system_prompt,                    # ← This was the fix
+            messages=history + [{"role": "user", "content": message}]
         )
         aiReply = response.content[0].text.strip()
         return jsonify({"reply": aiReply})
@@ -56,11 +56,6 @@ def voice():
     print("🔊 === VOICE REQUEST START ===")
     print(f"Character: {character}")
     print(f"Text length: {len(text)} characters")
-    print(f"ElevenLabs API Key present: {'YES' if ELEVENLABS_API_KEY and ELEVENLABS_API_KEY.startswith('sk_') else 'NO - MISSING OR INVALID KEY!'}")
-    
-    if not ELEVENLABS_API_KEY:
-        print("❌ ELEVENLABS_API_KEY is MISSING in Render Environment Variables!")
-        return jsonify({"error": "ElevenLabs API key not configured on server"}), 500
     
     try:
         response = requests.post(
