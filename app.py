@@ -17,10 +17,10 @@ VOICE_IDS = {
 }
 
 SYSTEM_PROMPTS = {
-    "Damian": "You are Damian Fraser. Dominant, protective, direct.",
-    "Lenai": "You are Lenai Devereaux. Warm, gentle, vulnerable.",
+    "Damian": "You are Damian Fraser. Dominant, protective, direct, commanding.",
+    "Lenai": "You are Lenai Devereaux. Warm, gentle, emotionally vulnerable.",
     "Victor": "You are Victor Kane. Cold, intelligent, dark charisma.",
-    "Elena": "You are Elena Voss. Seductive, teasing, confident."
+    "Elena": "You are Elena Voss. Seductive, teasing, confident, playful."
 }
 
 @app.route('/chat', methods=['POST'])
@@ -44,7 +44,7 @@ def chat():
             GROK_URL,
             headers={"Authorization": f"Bearer {GROK_API_KEY}", "Content-Type": "application/json"},
             json={
-                "model": "grok-4-0709",   # ← This is the currently working model
+                "model": "grok-4",
                 "messages": messages,
                 "temperature": 0.85,
                 "max_tokens": 500
@@ -54,7 +54,7 @@ def chat():
         response.raise_for_status()
         reply = response.json()["choices"][0]["message"]["content"].strip()
 
-        print(f"✅ Grok replied to {character}: {reply[:100]}...")
+        print(f"✅ Grok replied to {character}: {reply[:120]}...")
         return jsonify({"reply": reply})
 
     except Exception as e:
@@ -83,7 +83,7 @@ def voice():
 
 @app.route('/')
 def home():
-    return "Backend is running - Grok + ElevenLabs (FINAL WORKING VERSION)"
+    return "Backend is running - Grok + ElevenLabs (Final Clean Version)"
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
