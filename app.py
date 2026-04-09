@@ -38,20 +38,18 @@ def chat():
 
         system_prompt = SYSTEM_PROMPTS.get(character, SYSTEM_PROMPTS["Lenai"])
 
-        # CORRECT Claude call - system is top-level
         messages = [{"role": "user", "content": message}] if not history else history + [{"role": "user", "content": message}]
 
         response = client.messages.create(
             model="claude-3-5-sonnet-20241022",
             max_tokens=500,
             temperature=0.85,
-            system=system_prompt,           # ← This is the fix
+            system=system_prompt,      # ← This line is the fix
             messages=messages
         )
 
         reply = response.content[0].text.strip()
-        print(f"✅ Claude replied to {character}: {reply[:120]}...")
-
+        print(f"✅ Claude replied: {reply[:100]}...")
         return jsonify({"reply": reply})
 
     except Exception as e:
