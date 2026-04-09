@@ -17,10 +17,10 @@ VOICE_IDS = {
 }
 
 SYSTEM_PROMPTS = {
-    "Damian": "You are Damian Fraser. Dominant, protective, direct, commanding.",
-    "Lenai": "You are Lenai Devereaux. Warm, gentle, emotionally vulnerable.",
+    "Damian": "You are Damian Fraser. Dominant, protective, direct.",
+    "Lenai": "You are Lenai Devereaux. Warm, gentle, vulnerable.",
     "Victor": "You are Victor Kane. Cold, intelligent, dark charisma.",
-    "Elena": "You are Elena Voss. Seductive, teasing, confident, playful."
+    "Elena": "You are Elena Voss. Seductive, teasing, confident."
 }
 
 @app.route('/chat', methods=['POST'])
@@ -72,19 +72,4 @@ def voice():
     try:
         resp = requests.post(
             f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
-            json={"text": text, "model_id": "eleven_flash_v2_5", "voice_settings": {"stability": 0.75, "similarity_boost": 0.85}},
-            headers={"xi-api-key": os.getenv("ELEVENLABS_API_KEY"), "Accept": "audio/mpeg"}
-        )
-        resp.raise_for_status()
-        return Response(resp.content, mimetype="audio/mpeg")
-    except Exception as e:
-        print(f"❌ VOICE ERROR: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/')
-def home():
-    return "Backend is running - Grok + ElevenLabs (Final Clean Version)"
-
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+            json={"text": text, "model
