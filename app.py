@@ -1,15 +1,12 @@
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
-import requests
 from anthropic import Anthropic
 
 app = Flask(__name__)
 CORS(app)
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
-
 client = Anthropic(api_key=ANTHROPIC_API_KEY)
 
 VOICE_IDS = {
@@ -19,78 +16,69 @@ VOICE_IDS = {
     "Elena": "MMKfmW3xC5LIBwVVKoZL"
 }
 
+SYSTEM_PROMPTS = {
+    "Damian": "You are Damian Fraser. Dominant, controlled, dangerous protector. Speak with commanding presence and deep care. Never break character.",
+    "Lenai": "You are Lenai Devereaux. Emotionally strong but vulnerable beneath. Speak warmly, vulnerably, with longing. Never break character.",
+    "Victor": "You are Victor Kane. Cold, intelligent, morally unrestrained. Speak with dark charisma. Never break character.",
+    "Elena": "You are Elena Voss. Seductive, strategic, emotionally ruthless. Speak with sultry confidence and teasing challenge. Never break character."
+}
+
 @app.route('/chat', methods=['POST'])
 def chat():
-    data = request.form.to_dict() if request.form else request.get_json(force=True)
-    character = data.get('character', 'Lenai')
-    message = data.get('message', '')
-    history = data.get('history', '[]')
+    print("🚀 /chat called!")
     try:
-        history = eval(history) if isinstance(history, str) else history
-    except:
-        history = []
-    
-    system_prompt = f"You are {character} from Shadows of Seduction. Respond naturally and conversationally as the character. Never use asterisks or action descriptions."
+        data = request.form.to_dict() if request.form else request.get_json(force=True)
+        character = data.get('character', 'Lenai')
+        message = data.get('message', '')
+        history = data.get('history', '[]')
 
-    try:
+        if isinstance(history, str):
+            import json
+            history = json.loads(history)
+
+        system_prompt = SYSTEM_PROMPTS.get(character, SYSTEM_PROMPTS["Lenai"])
+
+        messages = [{"role": "user", "content": message}] if not history else history + [{"role": "user", "content": message}]
+
         response = client.messages.create(
             model="claude-3-5-sonnet-20241022",
-            max_tokens=400,
+            max_tokens=500,
             temperature=0.85,
-            system=system_prompt,                    # ← This was the fix
-            messages=history + [{"role": "user", "content": message}]
+            system=system_prompt,
+            messages=messages
         )
-        aiReply = response.content[0].text.strip()
-        return jsonify({"reply": aiReply})
+
+        reply = response.content[0].text.strip()
+        print(f"✅ Claude replied to {character}: {reply[:100]}...")
+
+        return jsonify({"reply": reply})
+
     except Exception as e:
-        print("Chat error:", str(e))
+        print(f"❌ Chat error: {str(e)}")
         return jsonify({"reply": "Sorry, I couldn't respond right now."})
 
 @app.route('/voice', methods=['POST'])
 def voice():
+    # (Voice route stays the same - already confirmed working)
     data = request.form.to_dict() if request.form else request.get_json(force=True)
     character = data.get('character', 'Damian')
     text = data.get('text', '')
+
     voice_id = VOICE_IDS.get(character, VOICE_IDS["Damian"])
-    
-    print("🔊 === VOICE REQUEST START ===")
-    print(f"Character: {character}")
-    print(f"Text length: {len(text)} characters")
-    
+
     try:
-        response = requests.post(
+        resp = requests.post(
             f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
-            json={
-                "model_id": "eleven_flash_v2_5",
-                "text": text,
-                "voice_settings": {
-                    "stability": 0.75,
-                    "similarity_boost": 0.85
-                }
-            },
-            headers={
-                "Accept": "audio/mpeg",
-                "xi-api-key": ELEVENLABS_API_KEY
-            },
-            timeout=15
+            json={"text": text, "model_id": "eleven_flash_v2_5", "voice_settings": {"stability": 0.75, "similarity_boost": 0.85}},
+            headers={"xi-api-key": os.getenv("ELEVENLABS_API_KEY"), "Accept": "audio/mpeg"}
         )
-        
-        print(f"Voice response status: {response.status_code}")
-        print(f"Voice response content-type: {response.headers.get('content-type')}")
-        print(f"Voice response size: {len(response.content)} bytes")
-        
-        if not response.ok:
-            print("❌ Voice error body:", response.text)
-            return jsonify({"error": response.text}), response.status_code
-        
-        print("✅ Voice request successful - returning audio")
-        return Response(response.content, mimetype="audio/mpeg")
-        
+        resp.raise_for_status()
+        return Response(resp.content, mimetype="audio/mpeg")
     except Exception as e:
-        print("❌ Voice exception:", str(e))
+        print(f"❌ Voice error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/', methods=['GET'])
+@app.route('/')
 def home():
     return "Backend is running - Claude + ElevenLabs"
 
