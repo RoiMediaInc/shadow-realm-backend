@@ -78,7 +78,7 @@ def voice():
 
 @app.route('/')
 def home():
-    return "Backend is running - Claude + ElevenLabs (New Service)"
+    return "Backend is running - Claude + ElevenLabs (New Service - Clean)"
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
