@@ -2,13 +2,12 @@ from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 import os
 import requests
-from anthropic import Anthropic
 
 app = Flask(__name__)
 CORS(app)
 
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-client = Anthropic(api_key=ANTHROPIC_API_KEY)
+GROK_API_KEY = os.getenv("GROK_API_KEY")
+GROK_URL = "https://api.x.ai/v1/chat/completions"
 
 VOICE_IDS = {
     "Damian": "bwFBqSVRgYJeueLra9wA",
@@ -39,18 +38,26 @@ def chat():
 
         system_prompt = SYSTEM_PROMPTS.get(character, SYSTEM_PROMPTS["Lenai"])
 
-        messages = [{"role": "user", "content": message}] if not history else history + [{"role": "user", "content": message}]
+        messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": message}]
 
-        response = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
-            max_tokens=500,
-            temperature=0.85,
-            system=system_prompt,
-            messages=messages
+        response = requests.post(
+            GROK_URL,
+            headers={
+                "Authorization": f"Bearer {GROK_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "grok-beta",
+                "messages": messages,
+                "temperature": 0.85,
+                "max_tokens": 500
+            }
         )
 
-        reply = response.content[0].text.strip()
-        print(f"✅ Claude replied: {reply[:120]}...")
+        response.raise_for_status()
+        reply = response.json()["choices"][0]["message"]["content"].strip()
+
+        print(f"✅ Grok replied: {reply[:120]}...")
         return jsonify({"reply": reply})
 
     except Exception as e:
@@ -80,7 +87,7 @@ def voice():
 
 @app.route('/')
 def home():
-    return "Backend is running - Claude + ElevenLabs"
+    return "Backend is running - Grok + ElevenLabs"
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
