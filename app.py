@@ -38,9 +38,10 @@ def chat():
 
         system_prompt = SYSTEM_PROMPTS.get(character, SYSTEM_PROMPTS["Lenai"])
 
-        messages = [{"role": "user", "content": message}] if not history else history + [{"role": "user", "content": message}]
+        print(f"→ Character: {character} | Message: {message}")
+        print(f"→ System prompt length: {len(system_prompt)}")
 
-        print(f"→ Sending to Claude: {character} | Message: {message[:80]}...")
+        messages = [{"role": "user", "content": message}] if not history else history + [{"role": "user", "content": message}]
 
         response = client.messages.create(
             model="claude-3-5-sonnet-20241022",
@@ -51,17 +52,19 @@ def chat():
         )
 
         reply = response.content[0].text.strip()
-        print(f"✅ Claude replied: {reply[:150]}...")
+        print(f"✅ SUCCESS - Claude replied: {reply[:150]}...")
 
         return jsonify({"reply": reply})
 
     except Exception as e:
-        print(f"❌ Chat error: {str(e)}")
+        print(f"❌ CHAT ERROR: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
         return jsonify({"reply": "Sorry, I couldn't respond right now."})
 
 @app.route('/voice', methods=['POST'])
 def voice():
-    # Voice route stays the same (already confirmed working)
+    # Voice route stays the same (already working)
     data = request.form.to_dict() if request.form else request.get_json(force=True)
     character = data.get('character', 'Damian')
     text = data.get('text', '')
