@@ -87,7 +87,7 @@ def voice():
 
 @app.route('/')
 def home():
-    return "Backend is running - Grok + ElevenLabs"
+    return "Backend is running - Grok + ElevenLabs"   # ← Change it to this
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
