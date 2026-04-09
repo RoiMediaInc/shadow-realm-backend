@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 import os
 from anthropic import Anthropic
@@ -38,33 +38,28 @@ def chat():
 
         system_prompt = SYSTEM_PROMPTS.get(character, SYSTEM_PROMPTS["Lenai"])
 
-        print(f"→ Character: {character} | Message: {message}")
-        print(f"→ System prompt length: {len(system_prompt)}")
-
+        # CORRECT Claude call - system is top-level
         messages = [{"role": "user", "content": message}] if not history else history + [{"role": "user", "content": message}]
 
         response = client.messages.create(
             model="claude-3-5-sonnet-20241022",
             max_tokens=500,
             temperature=0.85,
-            system=system_prompt,
+            system=system_prompt,           # ← This is the fix
             messages=messages
         )
 
         reply = response.content[0].text.strip()
-        print(f"✅ SUCCESS - Claude replied: {reply[:150]}...")
+        print(f"✅ Claude replied to {character}: {reply[:120]}...")
 
         return jsonify({"reply": reply})
 
     except Exception as e:
         print(f"❌ CHAT ERROR: {str(e)}")
-        import traceback
-        print(traceback.format_exc())
         return jsonify({"reply": "Sorry, I couldn't respond right now."})
 
 @app.route('/voice', methods=['POST'])
 def voice():
-    # Voice route stays the same (already working)
     data = request.form.to_dict() if request.form else request.get_json(force=True)
     character = data.get('character', 'Damian')
     text = data.get('text', '')
