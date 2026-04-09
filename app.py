@@ -41,7 +41,7 @@ def chat():
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": message}]
 
         payload = {
-            "model": "grok-4-1-fast-non-reasoning",   # ← Updated to current valid fast model
+            "model": "grok-4-1-fast-non-reasoning",   # ← Current valid fast model (April 2026)
             "messages": messages,
             "temperature": 0.85,
             "max_tokens": 500
@@ -92,7 +92,7 @@ def voice():
 
 @app.route('/')
 def home():
-    return "Backend is running - Grok + ElevenLabs (Fixed Model 2026)"
+    return "Backend is running - Grok + ElevenLabs (Fixed Model - April 2026)"
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
