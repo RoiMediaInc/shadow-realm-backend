@@ -44,7 +44,7 @@ def chat():
             GROK_URL,
             headers={"Authorization": f"Bearer {GROK_API_KEY}", "Content-Type": "application/json"},
             json={
-                "model": "grok-4",   # ← Most reliable current model
+                "model": "grok-4-0709",   # ← This is the currently working model
                 "messages": messages,
                 "temperature": 0.85,
                 "max_tokens": 500
@@ -83,7 +83,7 @@ def voice():
 
 @app.route('/')
 def home():
-    return "Backend is running - Grok + ElevenLabs (Final Simple Version)"
+    return "Backend is running - Grok + ElevenLabs (FINAL WORKING VERSION)"
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
