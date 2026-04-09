@@ -40,6 +40,8 @@ def chat():
 
         messages = [{"role": "user", "content": message}] if not history else history + [{"role": "user", "content": message}]
 
+        print(f"→ Sending to Claude: {character} | Message: {message[:80]}...")
+
         response = client.messages.create(
             model="claude-3-5-sonnet-20241022",
             max_tokens=500,
@@ -49,7 +51,7 @@ def chat():
         )
 
         reply = response.content[0].text.strip()
-        print(f"✅ Claude replied to {character}: {reply[:100]}...")
+        print(f"✅ Claude replied: {reply[:150]}...")
 
         return jsonify({"reply": reply})
 
@@ -59,11 +61,10 @@ def chat():
 
 @app.route('/voice', methods=['POST'])
 def voice():
-    # (Voice route stays the same - already confirmed working)
+    # Voice route stays the same (already confirmed working)
     data = request.form.to_dict() if request.form else request.get_json(force=True)
     character = data.get('character', 'Damian')
     text = data.get('text', '')
-
     voice_id = VOICE_IDS.get(character, VOICE_IDS["Damian"])
 
     try:
