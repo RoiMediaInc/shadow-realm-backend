@@ -40,29 +40,20 @@ def chat():
 
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": message}]
 
-        payload = {
-            "model": "grok-4",
-            "messages": messages,
-            "temperature": 0.85,
-            "max_tokens": 500
-        }
-
-        print(f"→ Sending to Grok | Character: {character} | Message: {message[:80]}...")
-
         response = requests.post(
             GROK_URL,
             headers={"Authorization": f"Bearer {GROK_API_KEY}", "Content-Type": "application/json"},
-            json=payload
+            json={"model": "grok-4", "messages": messages, "temperature": 0.85, "max_tokens": 500}
         )
 
-        print(f"→ Grok status code: {response.status_code}")
+        print(f"→ Grok status: {response.status_code}")
         if response.status_code != 200:
-            print(f"❌ GROK API ERROR: {response.text}")
+            print(f"❌ GROK ERROR: {response.text}")
 
         response.raise_for_status()
         reply = response.json()["choices"][0]["message"]["content"].strip()
 
-        print(f"✅ Grok replied to {character}: {reply[:120]}...")
+        print(f"✅ Grok replied: {reply[:120]}...")
         return jsonify({"reply": reply})
 
     except Exception as e:
@@ -84,7 +75,6 @@ def voice():
             headers={"xi-api-key": os.getenv("ELEVENLABS_API_KEY"), "Accept": "audio/mpeg"}
         )
         resp.raise_for_status()
-        print(f"✅ Voice success - {len(resp.content)} bytes")
         return Response(resp.content, mimetype="audio/mpeg")
     except Exception as e:
         print(f"❌ VOICE ERROR: {str(e)}")
@@ -92,7 +82,7 @@ def voice():
 
 @app.route('/')
 def home():
-    return "Backend is running - Grok + ElevenLabs (Heavy Debug)"
+    return "Backend is running - Grok + ElevenLabs (Debug v2)"
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
