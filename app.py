@@ -42,20 +42,10 @@ def chat():
         if not message:
             return jsonify({"reply": "Please type a message."})
 
-        # Temporary test reply - this bypasses Claude completely
-        reply = f"Hello from the backend! You said: '{message}'. Claude is being fixed."
-
-        print(f"✅ Test reply sent to {character}")
-        return jsonify({"reply": reply})
-
-    except Exception as e:
-        print(f"❌ CHAT ERROR: {str(e)}")
-        return jsonify({"reply": "Sorry, I couldn't respond right now."})
-
         system_prompt = SYSTEM_PROMPTS.get(character, SYSTEM_PROMPTS["Lenai"])
 
         response = client.messages.create(
-            model="claude-3-5-sonnet-20240620",
+            model="claude-3-5-sonnet-20240620",   # Correct model
             max_tokens=600,
             temperature=0.85,
             system=system_prompt,
