@@ -39,27 +39,20 @@ def chat():
         character = data.get('character', 'Lenai')
         message = data.get('message', '')
 
+        print(f"Received message from {character}: {message}")
+
         if not message:
             return jsonify({"reply": "Please type a message."})
 
-        system_prompt = SYSTEM_PROMPTS.get(character, SYSTEM_PROMPTS["Lenai"])
+        # Temporary test reply - bypasses Claude completely
+        reply = f"Hello! You said: '{message}'. The backend is connected. Claude is being fixed."
 
-        response = client.messages.create(
-            model="claude-3-5-sonnet-20240620",   # Correct model
-            max_tokens=600,
-            temperature=0.85,
-            system=system_prompt,
-            messages=[{"role": "user", "content": message}]
-        )
-
-        reply = response.content[0].text.strip()
-        print(f"✅ Claude replied to {character}: {reply[:100]}...")
-
+        print(f"✅ Test reply sent to {character}")
         return jsonify({"reply": reply})
 
     except Exception as e:
         print(f"❌ CHAT ERROR: {str(e)}")
-        return jsonify({"reply": "Sorry, I couldn't respond right now. The AI service may be down."})
+        return jsonify({"reply": "Sorry, I couldn't respond right now."})
 
 @app.route('/voice', methods=['POST'])
 def voice():
