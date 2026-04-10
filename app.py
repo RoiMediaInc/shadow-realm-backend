@@ -17,10 +17,10 @@ VOICE_IDS = {
     "Victor": "BQTfjA8kEOa1pGp1jDxb",
     "Damian": "bwFBqSVRgYJeueLra9wA"
 }
-print("=== REAL CLAUDE VERSION v6 - April 10 ===")
+
 @app.route('/')
 def home():
-    return "✅ Backend is running - Claude + ElevenLabs (REAL CLAUDE LIVE - APRIL 10 v5)"
+    return "✅ Backend is running - Claude + ElevenLabs (REAL CLAUDE LIVE - APRIL 10 v7)"
 
 @app.route('/chat', methods=['POST'])
 def chat():
