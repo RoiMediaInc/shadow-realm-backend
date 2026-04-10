@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 import os
@@ -21,7 +20,7 @@ VOICE_IDS = {
 
 @app.route('/')
 def home():
-    return "✅ Backend is running - Claude + ElevenLabs (REAL CLAUDE LIVE - APRIL 10 v4)"
+    return "✅ Backend is running - Claude + ElevenLabs (REAL - April 10)"
 
 @app.route('/chat', methods=['POST'])
 def chat():
