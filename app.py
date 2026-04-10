@@ -11,7 +11,7 @@ client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 @app.route('/')
 def home():
-    return "✅ Backend is running - Claude + ElevenLabs"
+    return "✅ Backend is running - Claude"
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -23,7 +23,6 @@ def chat():
         if not message:
             return jsonify({"reply": "Please type a message."})
 
-        # Simple system prompt
         system_prompt = f"You are {character}. Respond naturally and in character."
 
         response = client.messages.create(
@@ -36,7 +35,7 @@ def chat():
 
         reply = response.content[0].text.strip()
 
-        print(f"✅ Claude replied: {reply[:100]}...")
+        print(f"✅ Claude replied to {character}")
         return jsonify({"reply": reply})
 
     except Exception as e:
