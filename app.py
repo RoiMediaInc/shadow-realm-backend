@@ -20,7 +20,7 @@ VOICE_IDS = {
 
 @app.route('/')
 def home():
-    return "✅ Backend is running - Claude + ElevenLabs (REAL - April 10)"
+    return "✅ Backend is running - Claude + ElevenLabs (Docker)"
 
 @app.route('/chat', methods=['POST'])
 def chat():
