@@ -1,26 +1,25 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import os
 
 app = Flask(__name__)
 CORS(app)
 
 @app.route('/')
 def home():
-    return "✅ Backend is running on Render"
+    return "✅ Backend is running on Render - Ready"
 
 @app.route('/chat', methods=['POST'])
 def chat():
     print("🚀 /chat called!")
     try:
-        data = request.form.to_dict() if request.form else request.get_json(silent=True)
-        character = data.get('character', 'Lenai') if data else 'Lenai'
-        message = data.get('message', '') if data else ''
+        data = request.form.to_dict() if request.form else request.get_json(silent=True) or {}
+        character = data.get('character', 'Lenai')
+        message = data.get('message', '')
 
         if not message:
             return jsonify({"reply": "Please type a message."})
 
-        reply = f"Hello! You said: '{message}'. Backend is working (test mode)."
+        reply = f"Hello from the backend! You said: '{message}'. Character: {character}. (Test mode - Claude not connected yet)"
 
         print(f"✅ Reply sent to {character}")
         return jsonify({"reply": reply})
