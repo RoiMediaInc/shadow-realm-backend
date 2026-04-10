@@ -32,7 +32,7 @@ def chat():
             return jsonify({"reply": "Please type a message."})
         system_prompt = f"You are {character}. Respond naturally and in character."
         response = client.messages.create(
-            model="claude-3-5-sonnet-20240620",
+            model="claude-3-5-sonnet-0241022",
             max_tokens=500,
             temperature=0.8,
             system=system_prompt,
