@@ -28,19 +28,24 @@ def chat():
         character = request.form.get('character', 'Lenai')
         message = request.form.get('message', '')
         print(f"Received from {character}: {message}")
+        
         if not message:
             return jsonify({"reply": "Please type a message."})
+
         system_prompt = f"You are {character}. Respond naturally and in character."
+        
         response = client.messages.create(
-            model="claude-sonnet-4-6",
+            model="claude-3-5-sonnet-20241022",   # ← This is the current model
             max_tokens=500,
             temperature=0.8,
             system=system_prompt,
             messages=[{"role": "user", "content": message}]
         )
+        
         reply = response.content[0].text.strip()
         print(f"✅ Claude replied to {character}")
         return jsonify({"reply": reply})
+        
     except Exception as e:
         print(f"❌ CHAT ERROR: {str(e)}")
         return jsonify({"reply": "Sorry, I couldn't respond right now."})
@@ -51,10 +56,13 @@ def voice():
     try:
         character = request.form.get('character', 'Damian')
         text = request.form.get('text', '')
+        
         voice_text = re.sub(r'\*[^*]*\*', '', text)
         voice_text = re.sub(r'[_*]+', '', voice_text)
         voice_text = re.sub(r'\s+', ' ', voice_text).strip()
+        
         voice_id = VOICE_IDS.get(character, VOICE_IDS["Damian"])
+        
         resp = requests.post(
             f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
             json={
@@ -69,6 +77,7 @@ def voice():
         )
         resp.raise_for_status()
         return Response(resp.content, mimetype="audio/mpeg")
+        
     except Exception as e:
         print(f"❌ VOICE ERROR: {str(e)}")
         return jsonify({"error": str(e)}), 500
